@@ -4,6 +4,12 @@ on:
   push:
     branches: [ main, master ]
 
+  workflow_dispatch: 
+
+concurrency: 
+ group: Release
+ cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
