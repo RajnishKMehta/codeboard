@@ -1,26 +1,30 @@
-# Project-specific ProGuard rules for Codeboard
-# These rules ensure that essential classes are kept to prevent installation and runtime issues.
+# Comprehensive ProGuard rules for Codeboard
+# These rules ensure that all necessary classes are preserved to prevent installation and runtime issues.
 
-# Keep all project classes to ensure the IME and main activities function correctly
+# Keep application classes and their public members to ensure stability after minification
 -keep class com.gazlaws.codeboard.** { *; }
 
-# Keep Input Method Service and its internal implementations
+# Keep Input Method Service related classes (Crucial for Keyboard Apps)
 -keep class * extends android.inputmethodservice.InputMethodService
 -keep class * extends android.inputmethodservice.InputMethodService$InputMethodImpl
 
-# AndroidX and Material Design components keep rules (Prevents issues with inflation and reflection)
+# AndroidX and Material components (common rules to prevent issues with reflection and inflation)
 -keep class androidx.appcompat.** { *; }
 -keep class com.google.android.material.** { *; }
 -keep class androidx.preference.** { *; }
--keep class androidx.annotation.** { *; }
 -keep class androidx.core.** { *; }
+-keep class androidx.annotation.** { *; }
 
-# External Libraries: AppIntro and Color Picker
+# AppIntro specific rules
 -keep class com.github.appintro.** { *; }
+
+# Color Picker rules
 -keep class com.github.evilbunny2008.** { *; }
 
-# Maintain standard Android component entry points
--keepattributes *Annotation*, Signature, SourceFile, LineNumberTable
+# General Android support and lifecycle classes
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes SourceFile,LineNumberTable
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
 -keep public class * extends android.app.Service
@@ -29,15 +33,15 @@
 -keep public class * extends android.app.backup.BackupAgentHelper
 -keep public class * extends android.preference.Preference
 
-# Support for Javascript interfaces if utilized in WebViews
+# Keep class members for Javascript interface
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
 
-# Preserve R class for resource access via reflection or dynamic lookup
+# Preserve R classes for resource lookups
 -keep class **.R$* { *; }
 
-# Maintain View constructors and setters for XML layout inflation
+# Handle View related rules for XML inflation and property animation
 -keepclassmembers class * extends android.view.View {
    public <init>(android.content.Context);
    public <init>(android.content.Context, android.util.AttributeSet);
@@ -45,7 +49,7 @@
    public void set*(...);
 }
 
-# Kotlin metadata preservation for hybrid interoperability
+# Kotlin specific rules for hybrid support
 -keep class kotlin.Metadata { *; }
 -dontwarn kotlin.**
 -dontwarn org.jetbrains.kotlin.**
