@@ -8,12 +8,26 @@ android {
         applicationId "com.gazlaws.codeboard"
         minSdkVersion 23
         targetSdk 37
-        versionCode 23
+
+        // Use GitHub Run Number for versionCode on CI
+        versionCode (System.getenv("GITHUB_RUN_NUMBER")?.toInteger() ?: 23)
         versionName "6.0.3"
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+
+            def runNumber = System.getenv("GITHUB_RUN_NUMBER")
+            if (runNumber) {
+                // version+debug+GitHub Run Number
+                versionNameSuffix "-debug-$runNumber"
+            } else {
+                versionNameSuffix "-debug"
+            }
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
