@@ -1,16 +1,16 @@
 name: Android Release CI
 
 on:
-  pull_request: 
+  pull_request:
     types: [opened, synchronize, reopened]
     branches: ['**']
-    
+
   push:
     branches: [ main, master ]
 
-  workflow_dispatch: 
+  workflow_dispatch:
 
-concurrency: 
+concurrency:
  group: Release
  cancel-in-progress: true
 

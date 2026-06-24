@@ -1,13 +1,13 @@
 name: Android Debug CI (PR)
 
 on:
-  pull_request: 
+  pull_request:
     types: [opened, synchronize, reopened]
     branches: ['**']
-    
+
   workflow_dispatch:
-  
-concurrency: 
+
+concurrency:
  group: pr-${{ github.event.pull_request.number || github.ref }}
  cancel-in-progress: true
 
