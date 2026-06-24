@@ -10,9 +10,7 @@ android {
         applicationId = "com.gazlaws.codeboard"
         minSdk = 23
         targetSdk = 37
-
-        // Debug builds use GitHub Run Number as version code on CI
-        versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toInt() ?: 23
+        versionCode = 23
         versionName = "6.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -28,7 +26,7 @@ android {
 
         }
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
