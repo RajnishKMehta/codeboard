@@ -1,10 +1,11 @@
-name: Codeboard Android CI New
+name: Codeboard Android CI
 
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  pull_request: 
+    types: [opened, synchronize, reopened]
+    branches: ['**']
     
   workflow_dispatch:
 
