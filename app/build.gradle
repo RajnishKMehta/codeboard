@@ -10,7 +10,7 @@ android {
         targetSdk 37
 
         // Use GitHub Run Number for versionCode on CI
-        versionCode (System.getenv("GITHUB_RUN_NUMBER")?.toInteger() ?: 23)
+        versionCode (System.getenv("GITHUB_RUN_NUMBER")?.toInteger() ?: 1)
         versionName "6.0.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
