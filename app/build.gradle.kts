@@ -10,8 +10,6 @@ android {
         applicationId = "com.gazlaws.codeboard"
         minSdk = 23
         targetSdk = 37
-
-        // Use GitHub Run Number for versionCode on CI
         versionCode = 23
         versionName = "6.0.3"
 
@@ -21,17 +19,15 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            versionNameSuffix =
+              System.getenv("GITHUB_RUN_NUMBER")
+                ?.let { "-debug-$it" }
+                ?: "-debug"
 
-            val runNumber = System.getenv("GITHUB_RUN_NUMBER")
-            if (!runNumber.isNullOrEmpty()) {
-                // version+debug+GitHub Run Number
-                versionNameSuffix = "-debug-$runNumber"
-            } else {
-                versionNameSuffix = "-debug"
-            }
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
