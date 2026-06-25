@@ -44,7 +44,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
     KeyboardPreferences keyboardPreferences;
 
     private final ActivityResultLauncher<String> exportLauncher = registerForActivityResult(
-            new ActivityResultContracts.CreateDocument("application/octet-stream"),
+            new ActivityResultContracts.CreateDocument("application/x-codeboard"),
             uri -> {
                 if (uri != null) {
                     performExport(uri);
@@ -134,34 +134,32 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
     }
 
     private void validateAndPerformImport(Uri uri) {
-        String fileName = getFileName(uri);
+        String fileName = null;
+        long fileSize = -1;
+
+        try (Cursor cursor = requireContext().getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (nameIndex != -1) fileName = cursor.getString(nameIndex);
+
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                if (sizeIndex != -1) fileSize = cursor.getLong(sizeIndex);
+            }
+        }
+
+        if (fileName == null) fileName = uri.getPath();
+
+        // Validate Extension
         if (fileName != null && (fileName.endsWith(".codeboard") || fileName.endsWith(".json"))) {
+            // Validate Size (512KB limit)
+            if (fileSize > 512 * 1024) {
+                Toast.makeText(getActivity(), "File too large (max 512KB)", Toast.LENGTH_LONG).show();
+                return;
+            }
             performImport(uri);
         } else {
             Toast.makeText(getActivity(), R.string.invalid_file_type, Toast.LENGTH_LONG).show();
         }
-    }
-
-    private String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            try (Cursor cursor = requireContext().getContentResolver().query(uri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    if (index != -1) {
-                        result = cursor.getString(index);
-                    }
-                }
-            }
-        }
-        if (result == null) {
-            result = uri.getPath();
-            int cut = result.lastIndexOf('/');
-            if (cut != -1) {
-                result = result.substring(cut + 1);
-            }
-        }
-        return result;
     }
 
     private void performImport(Uri uri) {
@@ -228,8 +226,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
                 exportLauncher.launch(getString(R.string.default_export_filename));
                 break;
             case "import_settings":
-                // Set more specific MIME type to help filter files
-                importLauncher.launch(new String[]{"application/octet-stream", "application/json", "text/plain"});
+                importLauncher.launch(new String[]{"application/octet-stream", "application/x-codeboard"});
                 break;
             default:
                 break;

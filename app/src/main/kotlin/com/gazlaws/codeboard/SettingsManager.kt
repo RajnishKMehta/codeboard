@@ -8,7 +8,7 @@ import java.io.OutputStream
 
 object SettingsManager {
 
-    private const val MAX_FILE_SIZE = 512 * 1024 // 512KB is plenty for settings
+    private const val MAX_FILE_SIZE = 512 * 1024 // 512KB
 
     @JvmStatic
     fun exportSettings(context: Context, outputStream: OutputStream): String? {
@@ -18,7 +18,9 @@ object SettingsManager {
             val jsonObject = JSONObject()
 
             for ((key, value) in allPrefs) {
-                jsonObject.put(key, value)
+                if (SettingsValidator.isKeyValid(key)) {
+                    jsonObject.put(key, value)
+                }
             }
 
             outputStream.bufferedWriter().use { writer ->
@@ -45,14 +47,17 @@ object SettingsManager {
             val content = if (bytesRead > 0) String(buffer, 0, bytesRead) else ""
             if (content.isBlank()) return "File is empty"
 
-            val jsonObject = JSONObject(content)
+            val (jsonObject, error) = SettingsValidator.validateAndParse(content)
+            if (error != null) return error
+            if (jsonObject == null) return "Unexpected validation error"
+
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             val editor = prefs.edit()
 
             val keys = jsonObject.keys()
             while (keys.hasNext()) {
                 val key = keys.next()
-                if (jsonObject.isNull(key)) continue
+                if (!SettingsValidator.isKeyValid(key) || jsonObject.isNull(key)) continue
 
                 val value = jsonObject.get(key)
                 when (value) {
@@ -67,7 +72,7 @@ object SettingsManager {
             editor.apply()
             null
         } catch (t: Throwable) {
-            t.localizedMessage ?: "Invalid JSON or read error"
+            t.localizedMessage ?: "Invalid file or read error"
         } finally {
             try { inputStream.close() } catch (ignored: Exception) {}
         }
