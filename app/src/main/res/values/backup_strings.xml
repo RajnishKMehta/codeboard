@@ -7,6 +7,7 @@
     <string name="import_failed">Import failed</string>
     <string name="backup_restore_category">Backup &amp; Restore</string>
     <string name="default_export_filename">settings.codeboard</string>
-    <string name="import_error_format">Import failed: %1</string>
-    <string name="export_error_format">Export failed: %1</string>
+    <string name="import_error_format">Import failed: %1$s</string>
+    <string name="export_error_format">Export failed: %1$s</string>
+    <string name="invalid_file_type">Invalid file type. Please select a .codeboard or .json file.</string>
 </resources>

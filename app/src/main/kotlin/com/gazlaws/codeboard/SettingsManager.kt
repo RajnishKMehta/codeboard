@@ -8,10 +8,8 @@ import java.io.OutputStream
 
 object SettingsManager {
 
-    /**
-     * Exports all SharedPreferences to a JSON file.
-     * Returns null on success, or error message on failure.
-     */
+    private const val MAX_FILE_SIZE = 512 * 1024 // 512KB is plenty for settings
+
     @JvmStatic
     fun exportSettings(context: Context, outputStream: OutputStream): String? {
         return try {
@@ -27,21 +25,26 @@ object SettingsManager {
                 writer.write(jsonObject.toString(4))
             }
             null
-        } catch (e: Exception) {
-            e.message ?: "Unknown export error"
+        } catch (t: Throwable) {
+            t.localizedMessage ?: "Unknown export error"
         } finally {
             try { outputStream.close() } catch (ignored: Exception) {}
         }
     }
 
-    /**
-     * Imports SharedPreferences from a JSON file.
-     * Returns null on success, or error message on failure.
-     */
     @JvmStatic
     fun importSettings(context: Context, inputStream: InputStream): String? {
         return try {
-            val content = inputStream.bufferedReader().use { it.readText() }
+            val buffer = ByteArray(MAX_FILE_SIZE + 1)
+            val bytesRead = inputStream.read(buffer)
+
+            if (bytesRead > MAX_FILE_SIZE) {
+                return "File too large (max 512KB)"
+            }
+
+            val content = if (bytesRead > 0) String(buffer, 0, bytesRead) else ""
+            if (content.isBlank()) return "File is empty"
+
             val jsonObject = JSONObject(content)
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             val editor = prefs.edit()
@@ -57,13 +60,14 @@ object SettingsManager {
                     is Int -> editor.putInt(key, value)
                     is Long -> editor.putLong(key, value)
                     is Double -> editor.putFloat(key, value.toFloat())
+                    is Float -> editor.putFloat(key, value)
                     is String -> editor.putString(key, value)
                 }
             }
             editor.apply()
             null
-        } catch (e: Exception) {
-            e.message ?: "Invalid JSON or read error"
+        } catch (t: Throwable) {
+            t.localizedMessage ?: "Invalid JSON or read error"
         } finally {
             try { inputStream.close() } catch (ignored: Exception) {}
         }

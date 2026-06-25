@@ -7,9 +7,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.text.InputType;
 import android.util.Log;
@@ -54,7 +56,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
             new ActivityResultContracts.OpenDocument(),
             uri -> {
                 if (uri != null) {
-                    performImport(uri);
+                    validateAndPerformImport(uri);
                 }
             }
     );
@@ -131,6 +133,37 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
         }
     }
 
+    private void validateAndPerformImport(Uri uri) {
+        String fileName = getFileName(uri);
+        if (fileName != null && (fileName.endsWith(".codeboard") || fileName.endsWith(".json"))) {
+            performImport(uri);
+        } else {
+            Toast.makeText(getActivity(), R.string.invalid_file_type, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            try (Cursor cursor = requireContext().getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (index != -1) {
+                        result = cursor.getString(index);
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
+    }
+
     private void performImport(Uri uri) {
         try {
             InputStream is = requireContext().getContentResolver().openInputStream(uri);
@@ -195,7 +228,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
                 exportLauncher.launch(getString(R.string.default_export_filename));
                 break;
             case "import_settings":
-                importLauncher.launch(new String[]{"*/*"});
+                // Set more specific MIME type to help filter files
+                importLauncher.launch(new String[]{"application/octet-stream", "application/json", "text/plain"});
                 break;
             default:
                 break;
