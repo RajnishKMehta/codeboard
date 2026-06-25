@@ -22,7 +22,7 @@ object SettingsManager {
             }
 
             outputStream.bufferedWriter().use { writer ->
-                writer.write(jsonObject.toString(4))
+                writer.write(jsonObject.toString())
             }
             null
         } catch (t: Throwable) {
