@@ -6,4 +6,7 @@
     <string name="import_success">Settings imported. Restarting to apply changes...</string>
     <string name="import_failed">Import failed</string>
     <string name="backup_restore_category">Backup &amp; Restore</string>
+    <string name="default_export_filename">settings.codeboard</string>
+    <string name="import_error_format">Import failed: %1</string>
+    <string name="export_error_format">Export failed: %1</string>
 </resources>

@@ -116,29 +116,37 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
     private void performExport(Uri uri) {
         try {
             OutputStream os = requireContext().getContentResolver().openOutputStream(uri);
-            if (os != null && SettingsManager.exportSettings(requireContext(), os)) {
-                Toast.makeText(getActivity(), R.string.export_success, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getActivity(), R.string.export_failed, Toast.LENGTH_SHORT).show();
+            if (os != null) {
+                String error = SettingsManager.exportSettings(requireContext(), os);
+                if (error == null) {
+                    Toast.makeText(getActivity(), R.string.export_success, Toast.LENGTH_SHORT).show();
+                } else {
+                    String msg = getString(R.string.export_error_format, error);
+                    Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(getActivity(), "Export error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Export error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     private void performImport(Uri uri) {
         try {
             InputStream is = requireContext().getContentResolver().openInputStream(uri);
-            if (is != null && SettingsManager.importSettings(requireContext(), is)) {
-                Toast.makeText(getActivity(), R.string.import_success, Toast.LENGTH_LONG).show();
-                requireActivity().recreate();
-            } else {
-                Toast.makeText(getActivity(), R.string.import_failed, Toast.LENGTH_SHORT).show();
+            if (is != null) {
+                String error = SettingsManager.importSettings(requireContext(), is);
+                if (error == null) {
+                    Toast.makeText(getActivity(), R.string.import_success, Toast.LENGTH_LONG).show();
+                    requireActivity().recreate();
+                } else {
+                    String msg = getString(R.string.import_error_format, error);
+                    Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(getActivity(), "Import error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Import error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -184,7 +192,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
                 classicSymbols();
                 break;
             case "export_settings":
-                exportLauncher.launch("settings.codeboard");
+                exportLauncher.launch(getString(R.string.default_export_filename));
                 break;
             case "import_settings":
                 importLauncher.launch(new String[]{"*/*"});

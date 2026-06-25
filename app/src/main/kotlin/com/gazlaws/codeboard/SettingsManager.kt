@@ -10,9 +10,10 @@ object SettingsManager {
 
     /**
      * Exports all SharedPreferences to a JSON file.
+     * Returns null on success, or error message on failure.
      */
     @JvmStatic
-    fun exportSettings(context: Context, outputStream: OutputStream): Boolean {
+    fun exportSettings(context: Context, outputStream: OutputStream): String? {
         return try {
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             val allPrefs = prefs.all
@@ -25,18 +26,20 @@ object SettingsManager {
             outputStream.bufferedWriter().use { writer ->
                 writer.write(jsonObject.toString(4))
             }
-            true
+            null
         } catch (e: Exception) {
-            e.printStackTrace()
-            false
+            e.message ?: "Unknown export error"
+        } finally {
+            try { outputStream.close() } catch (ignored: Exception) {}
         }
     }
 
     /**
      * Imports SharedPreferences from a JSON file.
+     * Returns null on success, or error message on failure.
      */
     @JvmStatic
-    fun importSettings(context: Context, inputStream: InputStream): Boolean {
+    fun importSettings(context: Context, inputStream: InputStream): String? {
         return try {
             val content = inputStream.bufferedReader().use { it.readText() }
             val jsonObject = JSONObject(content)
@@ -46,22 +49,23 @@ object SettingsManager {
             val keys = jsonObject.keys()
             while (keys.hasNext()) {
                 val key = keys.next()
-                val value = jsonObject.get(key)
+                if (jsonObject.isNull(key)) continue
 
+                val value = jsonObject.get(key)
                 when (value) {
                     is Boolean -> editor.putBoolean(key, value)
                     is Int -> editor.putInt(key, value)
                     is Long -> editor.putLong(key, value)
                     is Double -> editor.putFloat(key, value.toFloat())
                     is String -> editor.putString(key, value)
-                    // If it is something else, we ignore or log
                 }
             }
             editor.apply()
-            true
+            null
         } catch (e: Exception) {
-            e.printStackTrace()
-            false
+            e.message ?: "Invalid JSON or read error"
+        } finally {
+            try { inputStream.close() } catch (ignored: Exception) {}
         }
     }
 }
