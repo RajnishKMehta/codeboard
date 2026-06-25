@@ -33,20 +33,31 @@ jobs:
 
       - name: Generate temporary keystore
         run: |
-          keytool -genkey -v -keystore /tmp/release.keystore \
+          keytool -genkey -v -keystore release.keystore \
             -keyalg RSA -keysize 2048 -validity 10000 \
             -alias release-key \
             -storepass "codeboard123" \
             -keypass "codeboard123" \
             -dname "CN=Codeboard, OU=Development, O=Codeboard, L=India, S=India, C=IN"
 
-      - name: Build signed Release APK
+      - name: Build Release APK
         run: ./gradlew assembleRelease --stacktrace
-        env:
-          KEYSTORE_FILE: /tmp/release.keystore
-          KEYSTORE_PASSWORD: codeboard123
-          KEY_ALIAS: release-key
-          KEY_PASSWORD: codeboard123
+
+      - name: Sign Release APK
+        run: |
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore release.keystore \
+            -storepass codeboard123 \
+            -keypass codeboard123 \
+            app/build/outputs/apk/release/app-release-unsigned.apk \
+            release-key
+
+      - name: Find and Zipalign APK
+        run: |
+          BUILD_TOOLS_VERSION=$(ls ${ANDROID_SDK_ROOT}/build-tools/ | sort -V | tail -1)
+          ${ANDROID_SDK_ROOT}/build-tools/${BUILD_TOOLS_VERSION}/zipalign -v 4 \
+            app/build/outputs/apk/release/app-release-unsigned.apk \
+            app/build/outputs/apk/release/app-release.apk
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v7
