@@ -18,9 +18,7 @@ object SettingsManager {
             val jsonObject = JSONObject()
 
             for ((key, value) in allPrefs) {
-                if (SettingsValidator.isKeyValid(key)) {
-                    jsonObject.put(key, value)
-                }
+                jsonObject.put(key, value)
             }
 
             outputStream.bufferedWriter().use { writer ->
@@ -37,19 +35,22 @@ object SettingsManager {
     @JvmStatic
     fun importSettings(context: Context, inputStream: InputStream): String? {
         return try {
-            val buffer = ByteArray(MAX_FILE_SIZE + 1)
-            val bytesRead = inputStream.read(buffer)
-
-            if (bytesRead > MAX_FILE_SIZE) {
+            val bytes = inputStream.use { it.readBytes() }
+            if (bytes.size > MAX_FILE_SIZE) {
                 return "File too large (max 512KB)"
             }
+            if (bytes.isEmpty()) return "File is empty"
 
-            val content = if (bytesRead > 0) String(buffer, 0, bytesRead) else ""
-            if (content.isBlank()) return "File is empty"
+            val content = String(bytes)
+            val jsonObject = try {
+                JSONObject(content)
+            } catch (e: Exception) {
+                return "Invalid JSON format: ${e.localizedMessage}"
+            }
 
-            val (jsonObject, error) = SettingsValidator.validateAndParse(content)
-            if (error != null) return error
-            if (jsonObject == null) return "Unexpected validation error"
+            if (jsonObject.length() == 0) {
+                return "This is not a valid settings file (empty)"
+            }
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             val editor = prefs.edit()
@@ -57,7 +58,7 @@ object SettingsManager {
             val keys = jsonObject.keys()
             while (keys.hasNext()) {
                 val key = keys.next()
-                if (!SettingsValidator.isKeyValid(key) || jsonObject.isNull(key)) continue
+                if (jsonObject.isNull(key)) continue
 
                 val value = jsonObject.get(key)
                 when (value) {

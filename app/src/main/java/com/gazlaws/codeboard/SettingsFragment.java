@@ -134,32 +134,21 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
     }
 
     private void validateAndPerformImport(Uri uri) {
-        String fileName = null;
         long fileSize = -1;
-
         try (Cursor cursor = requireContext().getContentResolver().query(uri, null, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
-                int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                if (nameIndex != -1) fileName = cursor.getString(nameIndex);
-
                 int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
                 if (sizeIndex != -1) fileSize = cursor.getLong(sizeIndex);
             }
         }
 
-        if (fileName == null) fileName = uri.getPath();
-
-        // Validate Extension
-        if (fileName != null && (fileName.endsWith(".codeboard") || fileName.endsWith(".json"))) {
-            // Validate Size (512KB limit)
-            if (fileSize > 512 * 1024) {
-                Toast.makeText(getActivity(), "File too large (max 512KB)", Toast.LENGTH_LONG).show();
-                return;
-            }
-            performImport(uri);
-        } else {
-            Toast.makeText(getActivity(), R.string.invalid_file_type, Toast.LENGTH_LONG).show();
+        // Validate Size (512KB limit)
+        if (fileSize > 512 * 1024) {
+            Toast.makeText(getActivity(), "File too large (max 512KB)", Toast.LENGTH_LONG).show();
+            return;
         }
+
+        performImport(uri);
     }
 
     private void performImport(Uri uri) {
