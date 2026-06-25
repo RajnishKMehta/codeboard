@@ -16,6 +16,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            keyStore = file(System.getenv("KEYSTORE_FILE") ?: "/tmp/release.keystore")
+            keyStorePassword = System.getenv("KEYSTORE_PASSWORD") ?: "codeboard123"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "release-key"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "codeboard123"
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -29,6 +38,7 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
