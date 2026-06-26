@@ -5,6 +5,7 @@ import androidx.preference.PreferenceManager
 import org.json.JSONObject
 import java.io.InputStream
 import java.io.OutputStream
+import java.io.ByteArrayOutputStream
 
 object SettingsManager {
 
@@ -35,13 +36,22 @@ object SettingsManager {
     @JvmStatic
     fun importSettings(context: Context, inputStream: InputStream): String? {
         return try {
-            val bytes = inputStream.use { it.readBytes() }
-            if (bytes.size > MAX_FILE_SIZE) {
-                return "File too large (max 512KB)"
-            }
-            if (bytes.isEmpty()) return "File is empty"
+            val buffer = ByteArray(60 * 1024) // 60KB
+            val output = ByteArrayOutputStream()
+            var totalBytes = 0
+            var bytesRead: Int
 
-            val content = String(bytes)
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                totalBytes += bytesRead
+                if (totalBytes > MAX_FILE_SIZE) {
+                    return "File too large (max 512KB)"
+                }
+                output.write(buffer, 0, bytesRead)
+            }
+
+            val content = output.toString("UTF-8")
+            if (content.isBlank()) return "File is empty"
+
             val jsonObject = try {
                 JSONObject(content)
             } catch (e: Exception) {

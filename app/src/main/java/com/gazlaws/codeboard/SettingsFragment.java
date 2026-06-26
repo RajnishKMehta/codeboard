@@ -78,7 +78,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
         });
         t.start();
 
-        //Only allow numbers
+        //Only allow positive numbers
         String[] numberOnlyPrefereces = {"vibrate_ms", "font_size", "size_portrait", "size_landscape"};
         for (String key : numberOnlyPrefereces) {
             EditTextPreference editTextPreference = getPreferenceManager().findPreference(key);
@@ -86,7 +86,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
                 editTextPreference.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
                     @Override
                     public void onBindEditText(@NonNull EditText editText) {
-                        editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
+                        editText.setInputType(InputType.TYPE_CLASS_NUMBER);
                     }
                 });
             }
@@ -126,6 +126,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
                     String msg = getString(R.string.export_error_format, error);
                     Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
                 }
+            } else {
+                Toast.makeText(getActivity(), R.string.export_failed, Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -163,6 +165,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements IOnFoc
                     String msg = getString(R.string.import_error_format, error);
                     Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
                 }
+            } else {
+                Toast.makeText(getActivity(), R.string.import_failed, Toast.LENGTH_LONG).show();
             }
         } catch (Exception e) {
             e.printStackTrace();
