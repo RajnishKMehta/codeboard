@@ -10,8 +10,8 @@ android {
         applicationId = "com.gazlaws.codeboard"
         minSdk = 23
         targetSdk = 37
-        versionCode = 23
-        versionName = "6.0.3"
+        versionCode = 24
+        versionName = "7.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
