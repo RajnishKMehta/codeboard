@@ -26,11 +26,11 @@ android {
 
         }
         release {
-            // Sign release build with debug key so it's installable from CI
+            // Sign release build with debug key (if release not available) so it's installable from CI
             val releaseConfig = signingConfigs.findByName("release")
             signingConfig = releaseConfig ?: signingConfigs.getByName("debug")
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
