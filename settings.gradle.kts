@@ -5,14 +5,15 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
-    // Repositories are defined in build.gradle for buildscript,
-    // and here for project dependencies.
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
+        maven { url = uri("https://jitpack.io") }
     }
 }
+
 rootProject.name = "codeboard"
-include ':app'
+include(":app")
