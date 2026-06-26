@@ -188,7 +188,7 @@
             android:title="Pin 7:"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Backup &amp; Restore">
+    <PreferenceCategory android:title="@string/backup_restore_category">
         <Preference
             android:key="export_settings"
             android:title="@string/export_settings_title" />
